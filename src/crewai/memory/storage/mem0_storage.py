@@ -48,7 +48,7 @@ class Mem0Storage(Storage):
                 self.memory = MemoryClient(api_key=mem0_api_key)
         else:
             if mem0_local_config and len(mem0_local_config):
-                self.memory = Memory.from_config(config)
+                self.memory = Memory.from_config(mem0_local_config)
             else:
                 self.memory = Memory()
 
@@ -88,7 +88,9 @@ class Mem0Storage(Storage):
             }
 
         if params:
-            self.memory.add(value, **params | {"output_format": "v1.1"})
+            if isinstance(self.memory, MemoryClient):
+                params["output_format"] = "v1.1"
+            self.memory.add(value, **params)
 
     def search(
         self,
@@ -96,7 +98,7 @@ class Mem0Storage(Storage):
         limit: int = 3,
         score_threshold: float = 0.35,
     ) -> List[Any]:
-        params = {"query": query, "limit": limit}
+        params = {"query": query, "limit": limit, "output_format": "v1.1"}
         if user_id := self._get_user_id():
             params["user_id"] = user_id
 
@@ -116,8 +118,11 @@ class Mem0Storage(Storage):
 
         # Discard the filters for now since we create the filters
         # automatically when the crew is created.
+        if isinstance(self.memory, Memory):
+            del params["metadata"], params["output_format"]
+            
         results = self.memory.search(**params)
-        return [r for r in results if r["score"] >= score_threshold]
+        return [r for r in results["results"] if r["score"] >= score_threshold]
 
     def _get_user_id(self) -> str:
         return self._get_config().get("user_id", "")

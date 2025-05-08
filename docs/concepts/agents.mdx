@@ -118,7 +118,7 @@ class LatestAiDevelopmentCrew():
   @agent
   def researcher(self) -> Agent:
     return Agent(
-      config=self.agents_config['researcher'],
+      config=self.agents_config['researcher'], # type: ignore[index]
       verbose=True,
       tools=[SerperDevTool()]
     )
@@ -126,7 +126,7 @@ class LatestAiDevelopmentCrew():
   @agent
   def reporting_analyst(self) -> Agent:
     return Agent(
-      config=self.agents_config['reporting_analyst'],
+      config=self.agents_config['reporting_analyst'], # type: ignore[index]
       verbose=True
     )
 ```
@@ -255,7 +255,11 @@ custom_agent = Agent(
 - `response_template`: Formats agent responses
 
 <Note>
-When using custom templates, you can use variables like `{role}`, `{goal}`, and `{input}` in your templates. These will be automatically populated during execution.
+When using custom templates, ensure that both `system_template` and `prompt_template` are defined. The `response_template` is optional but recommended for consistent output formatting.
+</Note>  
+
+<Note>
+When using custom templates, you can use variables like `{role}`, `{goal}`, and `{backstory}` in your templates. These will be automatically populated during execution.
 </Note>
 
 ## Agent Tools
